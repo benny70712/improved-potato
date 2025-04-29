@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors"
 import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt";
+
 
 import { connectDB } from "./config/db.js";
 import { isAtLeastTenYearsOld, hashPassword, checkPassword} from "./utils.js";
