@@ -87,7 +87,6 @@ app.post('/login', async  (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid email or password.' });
         }
 
-        console.log(user.password)
 
         // 3. Compare password
         const isPasswordValid = await checkPassword(password, user.password);
@@ -97,14 +96,50 @@ app.post('/login', async  (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid email or password.' });
         }
 
+
+        const accessToken = jwt.sign(
+            { id: user._id, email: user.email }, // Payload
+            process.env.ACCESS_TOKEN_SECRET,                          // Secret
+            { expiresIn: '1h' }                  // Token expiration
+        );
+
+        
+
         // 4. Successful login
-        res.status(200).json({ success: true, message: 'Login successful!' });
+        res.status(200).json({ success: true, data: [accessToken], message: 'Login successful!' });
 
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
 });
+
+
+async function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.sendStatus(401);
+
+
+    try {
+        const user = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        req.user = user
+        next()
+        return
+
+    }catch (err) {
+        return res.sendStatus(403);
+    }
+
+
+
+}
+
+app.get("/posts", authenticateToken ,async (req, res) => {
+    console.log(req.user)
+    res.status(200).json({ success: false, message: 'This is st routes' });
+})
 
 
   
