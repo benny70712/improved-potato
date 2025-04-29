@@ -2,9 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors"
 import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt";
 
 import { connectDB } from "./config/db.js";
-import { isAtLeastTenYearsOld, hashPassword } from "./utils.js";
+import { isAtLeastTenYearsOld, hashPassword, checkPassword} from "./utils.js";
 import User from "./models/user.model.js";
 
 const app = express();
@@ -70,15 +71,40 @@ app.post('/register', async (req, res) => {
 });
   
   // Login route
-  app.post('/login', (req, res) => {
+app.post('/login', async  (req, res) => {
     const { email, password } = req.body;
-    
-    // Here you would normally check user credentials from a database
-    console.log('User trying to login with:', { email, password });
-  
-    // Example success response
-    res.status(200).json({ message: 'Login successful!' });
-  });
+
+    // 1. Check if email and password are provided
+    if (!email || !password) {
+        return res.status(400).json({ success: false, message: 'Email and password are required.' });
+    }
+
+    try {
+        // 2. Find user by email
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid email or password.' });
+        }
+
+        console.log(user.password)
+
+        // 3. Compare password
+        const isPasswordValid = await checkPassword(password, user.password);
+
+
+        if (!isPasswordValid) {
+            return res.status(400).json({ success: false, message: 'Invalid email or password.' });
+        }
+
+        // 4. Successful login
+        res.status(200).json({ success: true, message: 'Login successful!' });
+
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
+    }
+});
 
 
   

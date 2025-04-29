@@ -33,5 +33,9 @@ async function hashPassword(plainPassword) {
 }
 
 
+async function checkPassword(password, existingPassword) {
+    return await bcrypt.compare(password, existingPassword);
+}
 
-export { isAtLeastTenYearsOld, hashPassword };
+
+export { isAtLeastTenYearsOld, hashPassword, checkPassword };
