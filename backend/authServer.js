@@ -41,7 +41,7 @@ app.post('/register', async (req, res) => {
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
-            return res.status(400).json({ success: false, data: [],  message: 'User already exists.' });
+            return res.status(400).json({ success: false, data: [],  message: ']Account already exists.' });
         }
 
 
@@ -58,7 +58,7 @@ app.post('/register', async (req, res) => {
 
         await newUser.save();
     
-        res.status(201).json({ message: 'User registered successfully!' });
+        res.status(201).json({ message: 'Registeration successful' });
       } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -102,10 +102,10 @@ app.post('/login', async  (req, res) => {
             token: refreshToken,
         });
 
-        refreshTokenModel.save()
+        await refreshTokenModel.save()
 
 
-        res.status(200).json({ success: true, data: [], tokens: {accessToken, refreshToken}, message: 'Login successful!' });
+        return res.status(200).json({ success: true, data: [], tokens: {accessToken, refreshToken}, message: 'Login successful!' });
 
     } catch (error) {
         console.error('Login error:', error);
