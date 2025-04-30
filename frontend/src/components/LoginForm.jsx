@@ -1,25 +1,46 @@
 import React, { useState } from 'react';
 import { FiMail, FiLock } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LoginForm = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Logging in with:', { email, password });
-    // Connect to backend login route here
+    console.log('Logging in with:', formData);
+
+    try {
+      const response = await axios.post('http://localhost:5000/login', formData);
+      const { accessToken, refreshToken } = response.data.tokens;
+
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      alert('Login successful!');
+      navigate('/posts');
+    } catch (error) {
+      console.error('Login failed:', error.response?.data || error.message);
+      alert(error.response?.data?.message || 'Login failed. Please try again.');
+    }
   };
 
   return (
     <div className="min-h-screen bg-orange-50 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white border border-orange-200 p-8 rounded-2xl shadow-md"
-        >
-          {/* Connect Potato Title */}
+        <form onSubmit={handleSubmit} className="bg-white border border-orange-200 p-8 rounded-2xl shadow-md">
           <h1 className="text-4xl font-extrabold text-center mb-8 text-orange-500 drop-shadow-sm">
             Connect Potato 🥔
           </h1>
@@ -30,9 +51,10 @@ const LoginForm = () => {
               <FiMail className="text-orange-400 mr-2" />
               <input
                 type="email"
+                name="email"
                 placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={handleChange}
                 required
                 className="w-full bg-transparent outline-none placeholder-orange-300 text-gray-800"
               />
@@ -45,16 +67,16 @@ const LoginForm = () => {
               <FiLock className="text-orange-400 mr-2" />
               <input
                 type="password"
+                name="password"
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 required
                 className="w-full bg-transparent outline-none placeholder-orange-300 text-gray-800"
               />
             </div>
           </div>
 
-          {/* Log In button */}
           <button
             type="submit"
             className="w-full bg-orange-400 hover:bg-orange-500 text-white font-semibold py-2 rounded-full text-sm transition duration-200 shadow"
@@ -62,14 +84,12 @@ const LoginForm = () => {
             Log In
           </button>
 
-          {/* Divider */}
           <div className="flex items-center my-4">
             <div className="flex-grow h-px bg-orange-200" />
             <span className="px-2 text-sm text-orange-400">OR</span>
             <div className="flex-grow h-px bg-orange-200" />
           </div>
 
-          {/* Sign up link */}
           <p className="text-center text-sm text-orange-500">
             Don’t have an account?{' '}
             <Link to="/signup" className="text-orange-600 font-medium hover:underline">

@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
 import { FiUser, FiMail, FiLock, FiCalendar, FiChevronDown } from 'react-icons/fi';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+
+import axios from 'axios';
+
+
+
 
 const RegisterForm = () => {
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     userName: '',
     birthday: { day: '', month: '', year: '' },
@@ -22,6 +30,7 @@ const RegisterForm = () => {
           [name]: value,
         },
       }));
+
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -30,10 +39,33 @@ const RegisterForm = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Registering user:', formData);
-    // Connect to backend
+    try {
+      const response = await axios.post('http://localhost:5000/register', formData);
+      console.log('Registration successful:', response.data);
+  
+      // Optionally show a success message or redirect
+      alert('Registration successful!');
+  
+      // Reset the form
+      setFormData({
+        userName: '',
+        birthday: { day: '', month: '', year: '' },
+        gender: '',
+        email: '',
+        password: '',
+      });
+
+      navigate('/login');
+  
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('Something went wrong. Please try again.');
+    }
+    
+
+
   };
 
   return (
@@ -76,7 +108,7 @@ const RegisterForm = () => {
               <input
                 type="email"
                 name="email"
-                placeholder="Mobile Number or Email"
+                placeholder="Email"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -112,6 +144,7 @@ const RegisterForm = () => {
                 min="1"
                 max="31"
                 value={formData.birthday.day}
+                required
                 onChange={handleChange}
                 className="w-1/3 border border-orange-200 bg-orange-50 text-sm px-3 py-2 rounded outline-none focus:ring-1 focus:ring-orange-300"
               />
@@ -119,6 +152,7 @@ const RegisterForm = () => {
                 <select
                   name="month"
                   value={formData.birthday.month}
+                  required
                   onChange={handleChange}
                   className="w-full appearance-none border border-orange-200 bg-orange-50 text-sm px-3 py-2 rounded outline-none focus:ring-1 focus:ring-orange-300"
                 >
@@ -141,6 +175,7 @@ const RegisterForm = () => {
                 max={new Date().getFullYear()}
                 value={formData.birthday.year}
                 onChange={handleChange}
+                required
                 className="w-1/3 border border-orange-200 bg-orange-50 text-sm px-3 py-2 rounded outline-none focus:ring-1 focus:ring-orange-300"
               />
             </div>
@@ -180,7 +215,9 @@ const RegisterForm = () => {
           {/* Already have account */}
           <p className="text-center text-sm text-orange-500">
             Have an account?{' '}
-            <a href="/login" className="text-orange-600 font-medium hover:underline">Log in</a>
+             <Link to="/login" className="text-orange-600 font-medium hover:underline">
+                          Log In
+              </Link>
           </p>
         </form>
       </div>
